@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Men's Casual Shoes - Store & Checkout</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<!-- Razorpay Checkout SDK Script -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   *, *::before, *::after {
     margin: 0;
@@ -34,18 +32,20 @@
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    width: 100%;
+    max-width: 480px;
     margin: 0 auto;
     padding-bottom: 24px;
+    transition: max-width 0.3s ease;
     overflow-x: hidden !important;
     overflow-y: auto !important;
     position: relative;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Desktop Enhancements - Full Width Grid */
+  /* Desktop Enhancements */
   @media (min-width: 768px) {
     html, body {
+      max-width: 800px;
       padding: 20px 24px 40px;
     }
     .topbar {
@@ -55,7 +55,7 @@
     .grid {
       grid-template-columns: repeat(3, 1fr) !important;
       gap: 20px !important;
-      padding: 0 20px !important;
+      padding: 0 !important;
     }
     .card:hover {
       transform: translateY(-5px);
@@ -68,8 +68,11 @@
   }
 
   @media (min-width: 1024px) {
+    html, body {
+      max-width: 1050px;
+    }
     .grid {
-      grid-template-columns: repeat(5, 1fr) !important;
+      grid-template-columns: repeat(4, 1fr) !important;
     }
   }
 
@@ -86,7 +89,7 @@
     display:flex;
     align-items:center;
     gap:12px;
-    padding:16px 20px;
+    padding:16px 12px;
   }
   .back-arrow{
     font-size:18px;
@@ -226,6 +229,7 @@
     padding: 32px 20px 24px;
     background: linear-gradient(180deg, #0b0b0b 0%, #050505 100%);
     border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
     text-align: center;
   }
   .footer-logo {
@@ -312,7 +316,7 @@
     background: rgba(5, 5, 8, 0.85); 
     backdrop-filter: blur(12px); 
     border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
-    padding: 12px 20px; 
+    padding: 12px 16px; 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
@@ -337,9 +341,9 @@
     border-color: rgba(255, 255, 255, 0.3);
   }
   .courses-container { 
-    max-width: 900px; 
+    max-width: 850px; 
     margin: auto; 
-    padding: 20px 20px 90px; 
+    padding: 20px 16px 90px; 
   } 
   .logo-wrapper { 
     display: flex; 
@@ -664,24 +668,34 @@
     flex-shrink: 0; 
   } 
 
-  /* BUYBAR - Full Width Desktop Fix */
+  /* BUYBAR */
   .buybar { 
     position: fixed; 
-    left: 0;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
-    max-width: 100%;
+    max-width: 480px;
     bottom: 0; 
     background: rgba(9, 5, 6, 0.98); 
     backdrop-filter: blur(16px); 
     border-top: 1px solid #231215; 
-    padding: 14px 24px; 
+    padding: 14px 20px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     z-index: 100; 
     gap: 12px; 
   } 
+  @media (min-width: 768px) {
+    .buybar {
+      max-width: 800px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .buybar {
+      max-width: 1050px;
+    }
+  }
   .price-container { 
     display: flex; 
     align-items: center; 
@@ -994,8 +1008,8 @@
       <!-- SUCCESS SCREEN --> 
       <div class="success-screen" id="success-screen"> 
         <div class="success-icon"><i class="fa-solid fa-check"></i></div> 
-        <h2 style="font-size:28px; color:#fff; margin-bottom:8px;">Payment Successful!</h2> 
-        <p style="color:#8e95a5; margin-bottom:30px;">Thank you for your purchase. Your order has been placed successfully.</p> 
+        <h2 style="font-size:28px; color:#fff; margin-bottom:8px;">Order Placed Successfully!</h2> 
+        <p style="color:#8e95a5; margin-bottom:30px;">Thank you for your order. Your transaction has been completed.</p> 
         <div class="download-box"> 
           <h3 style="justify-content:center; margin-top:0; color:#fff; margin-bottom:12px;"><i class="fa-solid fa-receipt"></i> Order Summary</h3> 
           <button class="download-btn" onclick="printReceipt()"><i class="fa-solid fa-print"></i> Print / Save Receipt</button> 
@@ -1153,6 +1167,7 @@
       });
     }
 
+    /* High Entropy 99.9% Unique User-Specific Tokenized URL Generator */
     function navigateToCheckout(productId) {
       const uniqueToken = (window.crypto && window.crypto.randomUUID) 
         ? window.crypto.randomUUID().replace(/-/g, '').substring(0, 16) + '-' + Math.random().toString(36).substring(2, 8) 
@@ -1167,10 +1182,139 @@
       handleRouting();
     }
 
+    /* Back arrow / Products navigation handler */
     function navigateToHome() {
       history.pushState({ page: 'home' }, '', window.location.pathname);
       handleRouting();
     }
 
+    /* Tokenized URL Router Parser */
     function handleRouting() {
-      const searchParams = new URLSearchParams(window.location.
+      const searchParams = new URLSearchParams(window.location.search);
+      const path = searchParams.get('path') || '';
+      let productId = searchParams.get('product');
+
+      if (path.includes('/dp/')) {
+        const parts = path.split('/dp/');
+        if (parts.length > 1) {
+          productId = parts[1];
+        }
+      }
+
+      const homePage = document.getElementById('home-page');
+      const checkoutPage = document.getElementById('checkout-page');
+
+      if (path.includes('product/') || productId || searchParams.get('page') === 'checkout') {
+        homePage.classList.remove('active');
+        checkoutPage.classList.add('active');
+        loadCheckoutProduct(productId || 'app-001', searchParams);
+      } else {
+        checkoutPage.classList.remove('active');
+        homePage.classList.add('active');
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function loadCheckoutProduct(productId, params) {
+      let title = 'Featured Product'; 
+      let imgUrl = ''; 
+      let description = 'Premium quality casual footwear designed with exquisite craftsmanship and attention to detail.'; 
+
+      if (productId && productsDatabase[productId]) {
+        const product = productsDatabase[productId];
+        title = product.name;
+        imgUrl = product.img || '';
+        basePrice = product.price;
+        description = product.description;
+      } else {
+        title = params.get('title') || title; 
+        imgUrl = params.get('img') || ''; 
+        basePrice = parseFloat(params.get('price')) || basePrice; 
+        description = params.get('desc') || description;
+      }
+
+      document.getElementById('product-title-display').innerText = title; 
+      document.getElementById('product-description-display').innerText = description;
+      
+      const imgElement = document.getElementById('product-main-img');
+      if (!imgUrl || imgUrl.trim() === '') {
+        imgElement.src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800';
+      } else {
+        imgElement.src = imgUrl;
+      }
+
+      document.getElementById('courses-main-content').style.display = 'block'; 
+      document.getElementById('buybar').style.display = 'flex'; 
+      document.getElementById('success-screen').style.display = 'none';
+
+      updatePlanPrices(); 
+    }
+
+    function updatePlanPrices() { 
+      const p1 = Math.round(basePrice * 0.75); 
+      const p2 = Math.round(basePrice); 
+      const p3 = Math.round(basePrice * 1.5); 
+
+      document.getElementById('plan-price-1').innerText = '₹' + p1; 
+      document.getElementById('plan-old-price-1').innerText = '₹' + Math.round(p1 * 1.6); 
+      document.getElementById('plan-price-2').innerText = '₹' + p2; 
+      document.getElementById('plan-old-price-2').innerText = '₹' + Math.round(p2 * 1.6); 
+      document.getElementById('plan-price-3').innerText = '₹' + p3; 
+      document.getElementById('plan-old-price-3').innerText = '₹' + Math.round(p3 * 1.6); 
+      
+      document.getElementById('per-day-1').innerText = '₹' + Math.round(p1 / 7) + ' / day';
+      document.getElementById('per-day-2').innerText = '₹' + Math.round(p2 / 15) + ' / day';
+      document.getElementById('per-day-3').innerText = '₹' + Math.round(p3 / 30) + ' / day';
+
+      selectedPlan = '15 Days';
+      selectedPrice = p2; 
+      selectedBadge = 'POPULAR';
+
+      document.getElementById('display-price').innerText = '₹' + p2; 
+      document.getElementById('display-old-price').innerText = '₹' + Math.round(p2 * 1.6); 
+      
+      const badgeEl = document.getElementById('display-badge');
+      if (badgeEl) {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.innerText = 'POPULAR';
+        badgeEl.style.background = '#ff2d2d';
+      }
+    } 
+
+    function selectAccess(plan, priceMultiplier, element) { 
+      selectedPlan = plan; 
+      selectedPrice = Math.round(basePrice * priceMultiplier); 
+      const oldPrice = Math.round(selectedPrice * 1.6); 
+      
+      document.getElementById('display-price').innerText = '₹' + selectedPrice; 
+      document.getElementById('display-old-price').innerText = '₹' + oldPrice; 
+      document.getElementById('stat-access-text').innerText = plan + ' Access'; 
+
+      const badgeEl = document.getElementById('display-badge');
+      if (plan === '7 Days') {
+        badgeEl.style.display = 'none';
+        selectedBadge = '';
+      } else if (plan === '15 Days') {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.innerText = 'POPULAR';
+        badgeEl.style.background = '#ff2d2d';
+        selectedBadge = 'POPULAR';
+      } else if (plan === '30 Days') {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.innerText = 'BEST VALUE';
+        badgeEl.style.background = 'linear-gradient(90deg, #ff3b30, #ff9500)';
+        selectedBadge = 'BEST VALUE';
+      }
+
+      document.querySelectorAll('.duration-card').forEach(card => card.classList.remove('active')); 
+      element.classList.add('active'); 
+      const radio = element.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    } 
+
+    /* Direct Success Handler (Payment Gateway Removed) */
+    function buyNowRazorpay() { 
+      document.getElementById('courses-main-content').style.display = 'none'; 
+      document.getElementById('buybar').style.display = 'none'; 
+      const randomKey = "TRK-" + Math.floor(1000 + Math.random() * 9000) + "-XKEY"; 
+      document.getElementById('generated-
